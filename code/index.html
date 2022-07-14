@@ -9,7 +9,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
-    <script src="https://unpkg.com/vue@3" defer></script>
+    <script src="https://unpkg.com/vue@next" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
@@ -20,24 +20,47 @@
       <section id="monster" class="container">
         <h2>Monster Health</h2>
         <div class="healthbar">
-          <div class="healthbar__value" :style="{width: monster_health + '%'}"></div>
+          <div class="healthbar__value" :style="monsterBarStyles"></div>
         </div>
       </section>
       <section id="player" class="container">
         <h2>Your Health</h2>
         <div class="healthbar">
-          <div class="healthbar__value" :style="{width: player_health + '%'}"></div>
+          <div class="healthbar__value" :style="playerBarStyles"></div>
         </div>
       </section>
-      <section id="controls">
-        <button @click="attack">ATTACK</button>
-        <button @click="specialAttack" :disabled="rounds % 3 !== 0">SPECIAL ATTACK</button>
-        <button>HEAL</button>
-        <button>SURRENDER</button>
+      <section class="container" v-if="winner">
+        <h2>Game Over!</h2>
+        <h3 v-if="winner === 'monster'">You lost!</h3>
+        <h3 v-else-if="winner === 'player'">You won!</h3>
+        <h3 v-else>It's a draw!</h3>
+        <button @click="startGame">Start New Game</button>
+      </section>
+      <section id="controls" v-else>
+        <button @click="attackMonster">ATTACK</button>
+        <button :disabled="mayUseSpecialAttack" @click="specialAttackMonster">
+          SPECIAL ATTACK
+        </button>
+        <button @click="healPlayer">HEAL</button>
+        <button @click="surrender">SURRENDER</button>
       </section>
       <section id="log" class="container">
         <h2>Battle Log</h2>
-        <ul></ul>
+        <ul>
+          <li v-for="log in logs">
+            <span
+              :class="{'log--player': log.actionBy == 'player', 'log--monster': log.actionBy === 'monster'}">
+              {{ log.actionBy === 'player' ? 'Player' : 'Monster' }}
+            </span>
+            <span v-if="log.action === 'heals'"
+              >heals by <span class="log--heal">{{ log.amount }}</span>
+            </span>
+            <span v-else>
+              attacks and deals
+              <span class="log--damage">{{ log.amount }}</span>
+            </span>
+          </li>
+        </ul>
       </section>
     </div>
   </body>
